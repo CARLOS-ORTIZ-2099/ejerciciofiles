@@ -11,7 +11,7 @@ const messages = require('./helpers/messages.js')
 
 function showOptions() {
     show()
-    rl.question('que deseas hacer \n', (response) => {
+    rl.question('que deseas hacer ❔\n '.blue, (response) => {
         switch(response) {
             case('1'):
                 // crear documento
@@ -45,7 +45,7 @@ showOptions()
 
 function openDir() {
         Directory.showDirectoriesAvailable(__dirname, true)
-        rl.question('que directorio deseas abrir '.cyan, (directory) => {
+        rl.question('que directorio deseas abrir ❔'.cyan, (directory) => {
             try{
                 let files = fs.readdirSync(directory)
                 let dirInstance = new Directory(__dirname, files, directory)
@@ -61,7 +61,7 @@ function openDir() {
 
 function createDir() {
     const dir = new Directory(__dirname)
-    rl.question('escribe el nombre de tu directorio ', (nameDirectory)=> {
+    rl.question('escribe el nombre de tu directorio 🧐', (nameDirectory)=> {
         dir.createDirectory(nameDirectory)
         console.log(dir);
         showOptions()
@@ -88,7 +88,7 @@ function saveAsDocument(file, target) {
     switch(target) {
         case(':sa'):  
             if(file.isSaved()){
-            console.log('ya guardaste el archivo'.yellow)
+            console.log('ya guardaste el archivo 🙂'.yellow)
             }else {
                 // guardar por primera vez
                 rl.question('inserta el nombre de tu archivo y extension '.cyan, (nameFile) => {
@@ -101,9 +101,9 @@ function saveAsDocument(file, target) {
         case(':s'):
             // guardar los ultimos cambios
             if(!file.isSaved()){
-                console.log(`antes de guardar cambios asegurate de guardar el archivo en una ubicacion`.red);
+                console.log(`antes de guardar cambios asegurate de guardar el archivo en una ubicacion 😐`.red);
             }else{
-                console.log(`cambios guardados `.magenta);
+                console.log(`cambios guardados 🙂`.magenta);
                 file.save()
             }
         break
@@ -120,7 +120,7 @@ function saveAsDocument(file, target) {
 
 
 function assignLocationForDocument(file, dirs, nameFile) {
-    rl.question('donde deseas guardar el archivo '.cyan, (directory) => {
+    rl.question('donde deseas guardar el archivo ❔'.cyan, (directory) => {
         Directory.verifyDirectoryExist(dirs, directory) ? file.saveAs(nameFile, directory === 'ejerciciofiles'? __dirname : directory) 
         : assignLocationForDocument(file, dirs, nameFile)     
     })
@@ -128,7 +128,7 @@ function assignLocationForDocument(file, dirs, nameFile) {
 
 function openDocument(dirname) {
     File.showDocumentsAvailable(dirname)
-    rl.question('elige tu archivo para abrir ', (name) => {
+    rl.question('elige tu archivo para abrir 🔎', (name) => {
         try{
             let file = new File()
             file.openFile(dirname, name)
@@ -139,7 +139,7 @@ function openDocument(dirname) {
             })
         }catch(err) {
             console.log(`${err}`.bgRed);
-            console.log(`el archivo no existe`.red);
+            console.log(`el archivo no existe ☹`.red);
             openDocument(dirname)
         }
     })

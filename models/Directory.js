@@ -12,9 +12,10 @@ class Directory {
     createDirectory(nameDirectory) {
         try {    
             fs.accessSync(nameDirectory)
-            console.log(`ya existe el directorio`.red);
+            console.log(`ya existe el directorio ☹`.red);
         }catch(err){
             fs.mkdirSync(nameDirectory)
+            console.log(`creado con exito 😀`)
         }
    
     }
@@ -29,7 +30,7 @@ class Directory {
 
     static verifyDirectoryExist(dirs, directory){
         if(!dirs.includes(directory)){
-            console.log('no existe ese directorio'.red)
+            console.log('no existe ese directorio ☹'.red)
            return false
         }else{
             return true

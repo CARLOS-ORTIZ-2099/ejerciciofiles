@@ -13,7 +13,7 @@ class File {
     }
 
     messageWelcome() {
-        console.log('escribe tu texto '.cyan);
+        console.log('escribe tu texto 🖊'.cyan);
     }
 
     isSaved() {
@@ -27,7 +27,7 @@ class File {
         this.saveFile = true
         const text = fs.readFileSync(path.join(dirname, name), 'utf-8')
         this.content = text
-        console.log(`sigue editando`.yellow)
+        console.log(`sigue editando 🖊`.yellow)
         console.log(this.content);
        // return text
     }
@@ -50,6 +50,7 @@ class File {
         this.saveFile = true
         fs.writeFileSync(path.join(this.ubication, this.name), this.content)
         console.log(this);
+        console.log('creado con exito 😀')
     }
 
     static showDocumentsAvailable(dirname) {
