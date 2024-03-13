@@ -2,13 +2,16 @@ const colors = require('colors')
 const fs = require('fs')
 const readline = require('readline')
 const rl = readline.createInterface(process.stdin, process.stdout)
-const File = require('./File.js')
+const File = require('./models/File.js')
+const Directory = require('./models/Directory.js')
 const path = require('path')
 
 function show() {
     console.log(`1: crear documento`.blue);
     console.log(`2: abrir documento`.blue);
-    console.log(`3: cerrar app`.blue);
+    console.log(`3: crear carpeta`.blue);
+    console.log(`4: abrir carpeta`.blue);
+    console.log(`5: cerrar app`.blue);
 }
 
 
@@ -22,8 +25,17 @@ function showOptions() {
             break
             case('2'):
                 // abrir documento
+                openDocument(__dirname)
             break
             case('3'):
+            // crear carpeta
+                createDir()
+            break
+            case('4'):
+            // crear carpeta
+                openDir()
+            break
+            case('5'):
                 // cerrar app
                 rl.close()
             break
@@ -35,6 +47,35 @@ function showOptions() {
 }
 
 showOptions()
+
+
+function openDir() {
+        let directorys = fs.readdirSync(__dirname)
+        directorys = directorys.filter(file => {
+        return fs.statSync(`${__dirname}/${file}`).isDirectory();
+        });
+
+        console.log(directorys);
+        rl.question('que directorio deseas abrir '.cyan, (directory) => {
+            let files = fs.readdirSync(directory)
+            let dirInstance = new Directory(__dirname, files)
+            console.log(dirInstance);
+           // dirInstance.seeListFiles()
+           openDocument(directory)
+        })
+    
+}
+
+function createDir() {
+    const dir = new Directory(__dirname)
+    rl.question('escribe el nombre de tu directorio', (nameDirectory)=> {
+        dir.createDirectory(nameDirectory)
+        console.log(dir);
+        showOptions()
+    })
+    
+}
+
 
 function createDocument() {
     const file = new File()
@@ -49,9 +90,6 @@ function writeDocument(file) {
         console.log(file);
         
     })
-    
-    
-
 }
 
 function saveAsDocument(file, target) {
@@ -69,13 +107,11 @@ function saveAsDocument(file, target) {
     
                     console.log([...directorys, path.basename(__dirname)]);
                     rl.question('donde deseas guardar el archivo '.cyan, (directory) => {
-                    file.saveAs(nameFile, directory)
+                    file.saveAs(nameFile, directory === 'ejerciciofiles'? __dirname : directory)
                     })
                 })
             }           
         break
-
-        
 
         case(':s'):
             // guardar los ultimos cambios
@@ -95,6 +131,30 @@ function saveAsDocument(file, target) {
 
         default: file.insertText(target)
     }
+}
+
+
+function openDocument(dirname) {
+    let files = fs.readdirSync(dirname, {encoding:'utf-8'})
+    files = files.filter((file) => !fs.statSync(`${dirname}/${file}`).isDirectory())
+    files.forEach((file) => console.log(`${file}`.cyan))
+    rl.question('elige tu archivo para abrir ', (name) => {
+        try{
+            let file = new File()
+            const text = file.openFile(dirname, name)
+            console.log(`sigue editando`.yellow);
+            file.content = text
+            console.log(text);
+            messages()
+            rl.on('line', (target) => {
+                saveAsDocument(file, target)
+                console.log(file);
+            })
+        }catch(err) {
+            console.log(`${err}`.bgRed);
+            openDocument()
+        }
+    })
 }
 
 
@@ -119,9 +179,16 @@ function messages() {
 
 */
 
+   
+     
 
 
 
 
 
+
+/* fs.stat() se utiliza para obtener información detallada sobre un archivo o directorio, mientras que fs.access() se utiliza principalmente para verificar la existencia y los permisos de acceso a un archivo o directorio.  
+
+
+*/
 

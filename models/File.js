@@ -17,9 +17,13 @@ class File {
     }
 
     // abrir el archivo o leerlo
-    openFile() {
-       const result = fs.readFileSync(path.join(__dirname, this.name), 'utf-8')
-       console.log(result);
+    openFile(dirname, name) {
+        this.ubication = dirname
+        this.name = name
+        this.saveFile = true
+        const result = fs.readFileSync(path.join(dirname, name), 'utf-8')
+       //console.log(result);
+       return result
     }
 
     saveAs(name, ubication) {
@@ -74,6 +78,6 @@ console.log(fx.createFile()); */
  */
 
 
-
+console.log(path.join(__dirname, 'hola.txt'));
 
 
