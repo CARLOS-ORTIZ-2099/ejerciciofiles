@@ -2,27 +2,38 @@ const fs = require('fs')
 const path = require('path')
 
 class Directory {
-    constructor(dirname,files) {
-        this.name = ''
+    constructor(dirname,files, directoryName) {
+        this.name = directoryName
         this.ubication = dirname
         this.content = files || []
     }
 
-    openDirectory() {}
 
     createDirectory(nameDirectory) {
-        try {
+        try {    
             fs.accessSync(nameDirectory)
-            console.log(`ya existe el directorio`.cyan);
+            console.log(`ya existe el directorio`.red);
         }catch(err){
-            //console.log(`${err}`.bgRed);
             fs.mkdirSync(nameDirectory)
         }
    
     }
 
-    seeListFiles() {
-        this.content.forEach(file => console.log(file))
+    static showDirectoriesAvailable(dirname, boolean) {
+        let directorys = fs.readdirSync(dirname)
+        directorys = directorys.filter(file =>  fs.statSync(`${dirname}/${file}`).isDirectory())
+        boolean ? console.log([...directorys]) :console.log([...directorys, path.basename(dirname)]);
+        let dirs = [...directorys, path.basename(dirname)]
+        return dirs
+    }
+
+    static verifyDirectoryExist(dirs, directory){
+        if(!dirs.includes(directory)){
+            console.log('no existe ese directorio'.red)
+           return false
+        }else{
+            return true
+        }
     }
 
 }

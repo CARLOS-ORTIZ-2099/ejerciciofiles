@@ -1,18 +1,12 @@
 const colors = require('colors')
 const fs = require('fs')
+const path = require('path')
 const readline = require('readline')
 const rl = readline.createInterface(process.stdin, process.stdout)
 const File = require('./models/File.js')
 const Directory = require('./models/Directory.js')
-const path = require('path')
-
-function show() {
-    console.log(`1: crear documento`.blue);
-    console.log(`2: abrir documento`.blue);
-    console.log(`3: crear carpeta`.blue);
-    console.log(`4: abrir carpeta`.blue);
-    console.log(`5: cerrar app`.blue);
-}
+const show = require('./helpers/show.js')
+const messages = require('./helpers/messages.js')
 
 
 function showOptions() {
@@ -32,7 +26,7 @@ function showOptions() {
                 createDir()
             break
             case('4'):
-            // crear carpeta
+            // abrir carpeta
                 openDir()
             break
             case('5'):
@@ -50,25 +44,24 @@ showOptions()
 
 
 function openDir() {
-        let directorys = fs.readdirSync(__dirname)
-        directorys = directorys.filter(file => {
-        return fs.statSync(`${__dirname}/${file}`).isDirectory();
-        });
-
-        console.log(directorys);
+        Directory.showDirectoriesAvailable(__dirname, true)
         rl.question('que directorio deseas abrir '.cyan, (directory) => {
-            let files = fs.readdirSync(directory)
-            let dirInstance = new Directory(__dirname, files)
-            console.log(dirInstance);
-           // dirInstance.seeListFiles()
-           openDocument(directory)
+            try{
+                let files = fs.readdirSync(directory)
+                let dirInstance = new Directory(__dirname, files, directory)
+                console.log(dirInstance);
+                openDocument(directory)
+            }catch(err){
+                console.log(`${err}`.bgRed);
+                openDir()
+            }
         })
     
 }
 
 function createDir() {
     const dir = new Directory(__dirname)
-    rl.question('escribe el nombre de tu directorio', (nameDirectory)=> {
+    rl.question('escribe el nombre de tu directorio ', (nameDirectory)=> {
         dir.createDirectory(nameDirectory)
         console.log(dir);
         showOptions()
@@ -80,15 +73,14 @@ function createDir() {
 function createDocument() {
     const file = new File()
     messages()
-    console.log('escribe tu texto'.cyan);
+   // console.log('escribe tu texto'.cyan);
     writeDocument(file)
 }
 
 function writeDocument(file) {
     rl.on('line', (target) => {
         saveAsDocument(file, target)
-        console.log(file);
-        
+        console.log(file); 
     })
 }
 
@@ -99,26 +91,19 @@ function saveAsDocument(file, target) {
             console.log('ya guardaste el archivo'.yellow)
             }else {
                 // guardar por primera vez
-                rl.question('inserta el nombre de tu archivo y extension'.cyan, (nameFile) => {
-                    let directorys = fs.readdirSync(__dirname)
-                    directorys = directorys.filter(file => {
-                    return fs.statSync(`${__dirname}/${file}`).isDirectory();
-                    });
-    
-                    console.log([...directorys, path.basename(__dirname)]);
-                    rl.question('donde deseas guardar el archivo '.cyan, (directory) => {
-                    file.saveAs(nameFile, directory === 'ejerciciofiles'? __dirname : directory)
-                    })
+                rl.question('inserta el nombre de tu archivo y extension '.cyan, (nameFile) => {
+                    const dirs =  Directory.showDirectoriesAvailable(__dirname) //file.showDirectoriesAvailable(__dirname)
+                    assignLocationForDocument(file, dirs, nameFile)
                 })
             }           
         break
 
         case(':s'):
             // guardar los ultimos cambios
-            console.log(`cambios guardados `.magenta);
             if(!file.isSaved()){
-                console.log(`antes de guardas cambio asegurate de guardar el archivo en una ubicacion`.red);
+                console.log(`antes de guardar cambios asegurate de guardar el archivo en una ubicacion`.red);
             }else{
+                console.log(`cambios guardados `.magenta);
                 file.save()
             }
         break
@@ -134,17 +119,19 @@ function saveAsDocument(file, target) {
 }
 
 
+function assignLocationForDocument(file, dirs, nameFile) {
+    rl.question('donde deseas guardar el archivo '.cyan, (directory) => {
+        Directory.verifyDirectoryExist(dirs, directory) ? file.saveAs(nameFile, directory === 'ejerciciofiles'? __dirname : directory) 
+        : assignLocationForDocument(file, dirs, nameFile)     
+    })
+}
+
 function openDocument(dirname) {
-    let files = fs.readdirSync(dirname, {encoding:'utf-8'})
-    files = files.filter((file) => !fs.statSync(`${dirname}/${file}`).isDirectory())
-    files.forEach((file) => console.log(`${file}`.cyan))
+    File.showDocumentsAvailable(dirname)
     rl.question('elige tu archivo para abrir ', (name) => {
         try{
             let file = new File()
-            const text = file.openFile(dirname, name)
-            console.log(`sigue editando`.yellow);
-            file.content = text
-            console.log(text);
+            file.openFile(dirname, name)
             messages()
             rl.on('line', (target) => {
                 saveAsDocument(file, target)
@@ -152,23 +139,12 @@ function openDocument(dirname) {
             })
         }catch(err) {
             console.log(`${err}`.bgRed);
-            openDocument()
+            console.log(`el archivo no existe`.red);
+            openDocument(dirname)
         }
     })
 }
 
-
-
-function messages() {
-    console.log(`
-        *********************
-        presiona los siguientes comando para : 
-        :sa : para guardar por primera vez
-        :s para guardar los ultimos cambios
-        :q para salir
-        *********************
-    `.magenta);
-}
 
 
 /* Todos los objetos que emiten eventos son instancias de la EventEmitterclase. Estos objetos exponen
@@ -181,7 +157,6 @@ function messages() {
 
    
      
-
 
 
 

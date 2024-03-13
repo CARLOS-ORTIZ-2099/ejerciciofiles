@@ -6,10 +6,14 @@ const path = require('path')
 class File {
     constructor() {
         this.name = ''
-        this.extension = ''
         this.ubication = __dirname
         this.content = ''
         this.saveFile = false
+        this.messageWelcome()
+    }
+
+    messageWelcome() {
+        console.log('escribe tu texto '.cyan);
     }
 
     isSaved() {
@@ -21,25 +25,17 @@ class File {
         this.ubication = dirname
         this.name = name
         this.saveFile = true
-        const result = fs.readFileSync(path.join(dirname, name), 'utf-8')
-       //console.log(result);
-       return result
+        const text = fs.readFileSync(path.join(dirname, name), 'utf-8')
+        this.content = text
+        console.log(`sigue editando`.yellow)
+        console.log(this.content);
+       // return text
     }
 
     saveAs(name, ubication) {
         this.name = name
         this.ubication = ubication
         this.createFile()
-       /*  try {
-            fs.accessSync(path.join(this.ubication, this.name), fs.constants.F_OK);
-            console.log('El archivo ya existe.');
-            this.save()
-            
-        } catch (err) {
-           // console.error('El archivo no existe o no se puede acceder.');
-           this.createFile()
-        } */
-        
     }
 
     save() {
@@ -54,6 +50,12 @@ class File {
         this.saveFile = true
         fs.writeFileSync(path.join(this.ubication, this.name), this.content)
         console.log(this);
+    }
+
+    static showDocumentsAvailable(dirname) {
+        let files = fs.readdirSync(dirname, {encoding:'utf-8'})
+        files = files.filter((file) => !fs.statSync(`${dirname}/${file}`).isDirectory())
+        files.forEach((file) => console.log(`${file}`.cyan))
     }
 
 }
